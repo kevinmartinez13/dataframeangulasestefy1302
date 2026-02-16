@@ -57,12 +57,12 @@
         <span class="btn-text">
           <!--iniciando sesion       continuar con google(logo de google)-->
 
-          {{ autenticando ? 'Iniciando sesión' : 'Continuar con google' }}
+          {{autenticando ? 'Iniciando sesión' : 'Continuar con google' }}
         </span>
       </button>
       <!--mensaje de error-->
       @if (mensajeError) {
-        <div class="error-message">✖️✖️✖️{{ mensajeError }}</div>
+        <div class="error-message">✖️✖️✖️{{mensajeError}}</div>
       }
     </div>
 
