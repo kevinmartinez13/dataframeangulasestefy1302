@@ -1,17 +1,17 @@
 export interface MensajeChat{
-    id:string,
-    contenido:string,
-    usuarioId:string,
-    fechaEnvio:string,
-    estado: 'enviado'|'enviado'|'error'|'temporal'
+    id: string,
+    contenido: string,
+    usuarioId: string,
+    fechaEnvio: Date,
+    estado: 'enviado'|'enviando'|'error'|'temporal'
     tipo: 'usuario' | 'asistente'
 }
 
 export interface ConversacionChat{
     id: string;
     usuarioId: string,
-    mensajes: MensajeChat,
+    mensaje: MensajeChat,
     ultimaActividad: Date,
     fechaCreacion: Date,
-    titulo: string
+    titulo: string;
 }
