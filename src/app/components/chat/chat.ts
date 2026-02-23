@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef } from '@angular/core';
 import { MensajeChat } from '../../../models/chat';
 import { FormsModule } from '@angular/forms';
 
@@ -13,9 +13,34 @@ export class Chat {
   email:string="kevin.martinez@ejemplo.com"
   asistenteEscribiendo= false
   cargandoHistorial= false
-  mensajes: MensajeChat[] = []
+  mensajes: MensajeChat[] =[]
   mensajeTexto=""
   enviandoMensaje= false
+  private debeHacerScroll = true;
+
+  // referenciar a los contentedores
+  @ViewChild('messagesContainer') messagesContainer! : ElementRef
+
+  private scorllHaciaAbajo():void{
+    try{
+      const container =this.messagesContainer?.nativeElement
+      if(container){
+        container.scrollTop = container.scrollHeight
+      }
+    }catch(error){
+      console.error('✖️✖️✖️error al hacer scroll✖️✖️✖️')
+    }
+  }
+
+  ngAfterViewChecked():void{
+    if(this.debeHacerScroll){
+      this.scorllHaciaAbajo()
+        this.debeHacerScroll = false
+    }
+  }
+ 
+      
+    
   
   enviarMensaje(){}
   manejoErrorImagen(){
@@ -25,7 +50,19 @@ export class Chat {
 
   trackByMensaje(index: number,mensaje: MensajeChat ){}
 
-  formatearMensajeAsistente(mensaje: string){}
+  formatearMensajeAsistente(contenido: string){
+    return contenido
+    .replace(/\n/g, '<br>')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+  }
+
+formatearHora(fecha: Date): string {
+  return fecha.toLocaleDateString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 
   ngOnInit(){
     this.mensajes = this.generarMensajesDemo();
@@ -80,6 +117,41 @@ export class Chat {
         usuarioId:'u2'
       },{
         id:'id7',
+        contenido:'hola me llamo kevin y me gusta programar',
+        tipo:'usuario',
+        fechaEnvio:new Date(ahora.getTime()),
+        estado:'enviado',
+        usuarioId:'u1'
+      },{
+        id:'id8',
+        contenido:'hola me llamo kevin y me gusta programar',
+        tipo:'usuario',
+        fechaEnvio:new Date(ahora.getTime()),
+        estado:'enviado',
+        usuarioId:'u1'
+      },{
+        id:'id9',
+        contenido:'hola me llamo kevin y me gusta programar',
+        tipo:'usuario',
+        fechaEnvio:new Date(ahora.getTime()),
+        estado:'enviado',
+        usuarioId:'u1'
+      },{
+        id:'id10',
+        contenido:'hola me llamo kevin y me gusta programar',
+        tipo:'usuario',
+        fechaEnvio:new Date(ahora.getTime()),
+        estado:'enviado',
+        usuarioId:'u1'
+      },{
+        id:'id11',
+        contenido:'hola me llamo kevin y me gusta programar',
+        tipo:'usuario',
+        fechaEnvio:new Date(ahora.getTime()),
+        estado:'enviado',
+        usuarioId:'u1'
+      },{
+        id:'id12',
         contenido:'hola me llamo kevin y me gusta programar',
         tipo:'usuario',
         fechaEnvio:new Date(ahora.getTime()),

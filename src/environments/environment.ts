@@ -1,13 +1,13 @@
 export const environment ={
     production:false,
     firebaseConfig : {
-    apiKey: "AIzaSyCwfLa3i0pbzKM67-VvVS5xc-0-OyR7BWM",
-    authDomain: "chatangular-28da9.firebaseapp.com",
-    projectId: "chatangular-28da9",
-    storageBucket: "chatangular-28da9.firebasestorage.app",
-    messagingSenderId: "868458214120",
-    appId: "1:868458214120:web:510dc2c04e186eb4978f5d",
-    measurementId: "G-MP6GFG6BG5"
+     apiKey: "AIzaSyCGayfuAl6MIwELDnvhvDU2E_oWbjlDE3U",
+     authDomain: "kevin1302-504f6.firebaseapp.com",
+     projectId: "kevin1302-504f6",
+     storageBucket: "kevin1302-504f6.firebasestorage.app",
+     messagingSenderId: "418017126501",
+      appId: "1:418017126501:web:324b0e5fe730ffed5e7e8c",
+      measurementId: "G-R04RLZ12ZG"
     },
         
         gemini:{

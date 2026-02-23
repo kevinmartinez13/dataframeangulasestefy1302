@@ -1,8 +1,8 @@
 export interface usuario{
-    uid: string;
-    nombre:string;
-    email:string;
-    fotoUrl: string;
-    fechaCreacion: Date;
-    ultimaConexion: Date;
+    uid: string,
+    nombre:string,
+    email:string,
+    fotoUrl?: string,
+    fechaCreacion: Date,
+    ultimaConexion: Date,
 }
