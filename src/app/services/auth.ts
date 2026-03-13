@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Auth, user, User, signOut } from '@angular/fire/auth';
 import { map } from 'rxjs';
-import { Usuario } from '../../models/usuario';
+import { usuario } from '../../models/usuario';
 import { GoogleAuthProvider } from 'firebase/auth';
 import { signInWithPopup } from 'firebase/auth';
 import { object } from '@angular/fire/database';
@@ -23,8 +23,10 @@ export class AuthService {
 
 
 
-  // funcion asincrona que permite el inicio de sesion 
-  async iniciarSesion(): Promise<Usuario | null> {
+  // funcion asincrona que permite el inicio de sesion
+  async iniciarSesion(): Promise<usuario | null> {
+    console.log("inicio sesion auth");
+
     try {
 
       const proveedor = new GoogleAuthProvider;
@@ -41,7 +43,7 @@ export class AuthService {
 
 
       if (usuarioFirebase) {
-        const usuario: Usuario = {
+        const usuario: usuario = {
 
           uid: usuarioFirebase.uid,
           nombre: usuarioFirebase.displayName || 'Usuario sin Nombre',
@@ -61,10 +63,12 @@ export class AuthService {
   }
 
   obtenerUsuario(): User | null {
+    console.log("obtener usuario - auth.ts");
+
     return this.auth.currentUser
   }
- 
-  
+
+
   async cerrarSesion(): Promise<void> {
     try {
       await signOut(this.auth);

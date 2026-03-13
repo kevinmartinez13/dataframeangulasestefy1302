@@ -23,7 +23,7 @@ export class Chat implements OnInit, OnDestroy, AfterViewChecked {
 
   //Referenciar contenedores
   @ViewChild('messagesContainer') messagesContainer! : ElementRef
-  @ViewChild('mmensajeInput') mensajeInput! : ElementRef
+  @ViewChild('mensajeInput') mensajeInput! : ElementRef
 
   usuario: User|null = null;
   mensajes: MensajeChat[] =[]
@@ -38,8 +38,12 @@ export class Chat implements OnInit, OnDestroy, AfterViewChecked {
   private suscripciones : Subscription[] = []
 
   private async verificarAutenticacion(): Promise<void>{
+    console.log("verificar autentiacion componente");
+
   // a la variable usuario le voy a asignar el servicio de auth y la funcion obtenerUsuario
   this.usuario = this.authService.obtenerUsuario()
+  console.log(this.usuario, "usuario");
+
   if (!this.usuario) {
     await this.router.navigate(['/auth'])
     throw Error('No hay un usuario autenticado')
@@ -47,7 +51,7 @@ export class Chat implements OnInit, OnDestroy, AfterViewChecked {
 }
 private async inicializarChat(): Promise<void>{
   if(!this.usuario){
-    return; 
+    return;
   }
 this.cargandoHistorial = true;
 try{
@@ -56,7 +60,7 @@ try{
   console.error('Error al inicializar')
   throw error;
 
-  
+
 }finally{
   this.cargandoHistorial = false
 }
@@ -64,11 +68,11 @@ try{
 
   private configurarSuscripciones(): void{
     const subMensajes = this.chatService.mensajes$.subscribe( mensajes=>{
-      this.mensajes = mensajes; 
+      this.mensajes = mensajes;
       this.debeHacerScroll = true;
     });
 
-    
+
     const subMensajesAsis = this.chatService.asistenteRespondiendo$.subscribe( respondiendo => {
       this.asistenteEscribiendo = respondiendo;
       if(respondiendo){
@@ -89,7 +93,7 @@ try{
   this.mensajeerror=""
   this.enviandoMensaje= true;
 
-//guardar el mensaje en la variable texto 
+//guardar el mensaje en la variable texto
   const texto = this.mensajeTexto.trim();
   //limpiar el input
   this.mensajeTexto= "";
@@ -115,9 +119,9 @@ try{
     }
   }
 
-  
-    
-   
+
+
+
 
   async cerrarSesion(): Promise<void>{
     try{
@@ -132,9 +136,9 @@ try{
     }
   }
 
-  
 
-  
+
+
 
 
   private scrollHaciaAbajo():void{
@@ -142,7 +146,7 @@ try{
         const container = this.messagesContainer?.nativeElement
         if(container){
           container.scrollTop = container.scrollHeight
-          
+
         }
     }catch(error){
       console.error('✖️Error al hacer scroll', error)
@@ -164,14 +168,14 @@ try{
     evento.target.src =""
 
   }
-  
+
 
   trackByMensaje( index:number, mensaje: MensajeChat){
     return mensaje.id || `${mensaje.tipo} - ${mensaje.fechaEnvio}.getTime()}`
 }
 
   formatearMensajeAsistente(contenido:string){
-    
+
     return contenido
     .replace(/\n/g, '<br>')
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -199,7 +203,7 @@ try{
     this.mensajeerror= "Error al cargar el chat. Intente recargar la pagina"
     throw error;
   }
- 
+
 
 }
 

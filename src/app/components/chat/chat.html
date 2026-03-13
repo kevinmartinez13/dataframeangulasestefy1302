@@ -3,14 +3,14 @@
   <header class="chat-header">
     <div class="user-info">
       <img
-        src="{{usuario?.photoURL}}"
+        src="{{ usuario?.photoURL }}"
         alt="imagen del usuario"
         class="user-avatar"
-        (error)="manejoErrorImagen($event)"
+        (error)="manejoErrorimagen  ($event)"
       />
       <div class="user-details">
-        <h2 class="user-name">{{usuario?.displayName}}</h2>
-        <p class="user-email">{{usuario?.email}}</p>
+        <h2 class="user-name">{{ usuario?.displayName }}</h2>
+        <p class="user-email">{{ usuario?.email }}</p>
       </div>
     </div>
 
@@ -55,7 +55,7 @@
                 <p>{{ mensaje.contenido }}</p>
               </div>
               <div class="message-time">
-                <p>{{formatearHora(mensaje.fechaEnvio)}}</p>
+                <p>{{ formatearHora(mensaje.fechaEnvio) }}</p>
               </div>
             </div>
           }
@@ -69,7 +69,7 @@
                   <p [innerHTML]="formatearMensajeAsistente(mensaje.contenido)"></p>
                 </div>
                 <div class="message-time">
-                  {{formatearHora(mensaje.fechaEnvio)}}
+                  {{ formatearHora(mensaje.fechaEnvio) }}
                   @if (mensaje.estado === 'error') {
                     <span class="error-indicator">⚠️</span>
                   }
@@ -117,8 +117,10 @@
         type="submit"
         class="send-btn"
         [disabled]="!mensajeTexto.trim() || enviandoMensaje || asistenteEscribiendo"
-        [class.sending]="enviandoMensaje">⚠️
-        
+        [class.sending]="enviandoMensaje"
+      >
+        ⚠️
+
         @if (enviandoMensaje) {
           <span></span>
         }

@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
-import { AuthService } from '../../services/auth';
 import { Router } from '@angular/router';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { AuthService } from '../../services/auth';
 
 
 @Component({
@@ -20,17 +21,20 @@ import { Router } from '@angular/router';
 
       //funcion que revise la autenticacion
       async iniciarsesioncongoogle (): Promise<void> {
+        console.log(
+          "inicion sesion con componet"
+        );
+
         this.autenticando= true
         this.mensajeError=""
 
         try {
           //falta implementar el servicio
+           console.log("inicion sesion con componet" );
+           const usuario = await this.authService.iniciarSesion()
 
           //vamos a simular un usuario ya creado
-          let usuario = null
-          usuario = await new Promise ((resolve) =>{
-            setTimeout(()=>resolve({nombre:'usuario de prueba'}), 1000)
-        })
+
 
         if(usuario){
           await this.router.navigate(['/chat'])
@@ -52,11 +56,15 @@ import { Router } from '@angular/router';
       this.autenticando= false
     }
   }
-  /*
-verificar que si el usuario ya es 
-  ngOninit(){
-    this.router.navigate(['/chat'])
-  }*/
-}
 
+  ngOninit():void{
+    this.authService.estaAutenticado$.subscribe( autenticado=> {
+      console.log("onInit");
+
+      if(autenticado){
+        this.router.navigate(['/chat'])
+      }
+    })
+}
+}
 

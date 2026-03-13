@@ -1,5 +1,5 @@
 export interface MensajeChat{
-    id: string,
+    id?: string,
     contenido: string,
     usuarioId: string,
     fechaEnvio: Date,
@@ -10,7 +10,7 @@ export interface MensajeChat{
 export interface ConversacionChat{
     id: string;
     usuarioId: string,
-    mensaje: MensajeChat,
+    mensaje: MensajeChat[],
     ultimaActividad: Date,
     fechaCreacion: Date,
     titulo: string;
