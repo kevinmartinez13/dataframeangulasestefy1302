@@ -1,6 +1,12 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, contentChild, inject, viewChild, OnInit, OnDestroy, AfterViewChecked } from '@angular/core';
 import { MensajeChat } from '../../../models/chat';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth';
+import { ChatService } from '../../services/chat';
+import { Router } from '@angular/router';
+import { User } from 'firebase/auth';
+import { Subscription } from 'rxjs';
+
 
 @Component({
   selector: 'app-chat',
@@ -8,158 +14,205 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './chat.html',
   styleUrl: './chat.css',
 })
-export class Chat {
-  nombre:string="kevin13"       
-  email:string="kevin.martinez@ejemplo.com"
-  asistenteEscribiendo= false
-  cargandoHistorial= false
-  mensajes: MensajeChat[] =[]
-  mensajeTexto=""
-  enviandoMensaje= false
-  private debeHacerScroll = true;
+export class Chat implements OnInit, OnDestroy, AfterViewChecked {
 
-  // referenciar a los contentedores
+
+  private authService = inject(AuthService)
+  private chatService = inject(ChatService)
+  private router = inject(Router)
+
+  //Referenciar contenedores
   @ViewChild('messagesContainer') messagesContainer! : ElementRef
+  @ViewChild('mmensajeInput') mensajeInput! : ElementRef
 
-  private scorllHaciaAbajo():void{
-    try{
-      const container =this.messagesContainer?.nativeElement
-      if(container){
-        container.scrollTop = container.scrollHeight
+  usuario: User|null = null;
+  mensajes: MensajeChat[] =[]
+  cargandoHistorial=false
+  asistenteEscribiendo=false
+  enviandoMensaje=false
+  mensajeTexto=""
+  mensajetextoError=""
+  mensajeerror=""
+  private debeHacerScroll: boolean = false;
+
+  private suscripciones : Subscription[] = []
+
+  private async verificarAutenticacion(): Promise<void>{
+  // a la variable usuario le voy a asignar el servicio de auth y la funcion obtenerUsuario
+  this.usuario = this.authService.obtenerUsuario()
+  if (!this.usuario) {
+    await this.router.navigate(['/auth'])
+    throw Error('No hay un usuario autenticado')
+  }
+}
+private async inicializarChat(): Promise<void>{
+  if(!this.usuario){
+    return; 
+  }
+this.cargandoHistorial = true;
+try{
+  await this.chatService.InicializarChat(this.usuario.uid)
+} catch (error){
+  console.error('Error al inicializar')
+  throw error;
+
+  
+}finally{
+  this.cargandoHistorial = false
+}
+}
+
+  private configurarSuscripciones(): void{
+    const subMensajes = this.chatService.mensajes$.subscribe( mensajes=>{
+      this.mensajes = mensajes; 
+      this.debeHacerScroll = true;
+    });
+
+    
+    const subMensajesAsis = this.chatService.asistenteRespondiendo$.subscribe( respondiendo => {
+      this.asistenteEscribiendo = respondiendo;
+      if(respondiendo){
+        this.debeHacerScroll = true
       }
-    }catch(error){
-      console.error('✖️✖️✖️error al hacer scroll✖️✖️✖️')
+    });
+
+
+    this.suscripciones.push(subMensajes, subMensajesAsis)
+  }
+
+
+ async  enviarMensaje(): Promise<void>{
+  if(!this.mensajeTexto.trim()){
+    return;
+  }
+
+  this.mensajeerror=""
+  this.enviandoMensaje= true;
+
+//guardar el mensaje en la variable texto 
+  const texto = this.mensajeTexto.trim();
+  //limpiar el input
+  this.mensajeTexto= "";
+
+  try{
+    await this.chatService.enviarMensaje(texto);
+    this.enfocarInput();
+  }catch(error: any){
+    console.error('Error al enviar el mensaje')
+
+    this.mensajeerror = error.message  || 'Error al enviar el mensaje'
+    this.mensajeTexto = texto;
+  }finally{
+    this.enviandoMensaje = false;
+  }
+
+}
+
+  manejarTeclaPresionada(evento: KeyboardEvent){
+    if(evento.key === "Enter" && !evento.shiftKey){
+      evento.preventDefault();
+      this.enviarMensaje();
     }
   }
 
+  
+    
+   
+
+  async cerrarSesion(): Promise<void>{
+    try{
+      this.chatService.limpiarChat();
+
+      await this.authService.cerrarSesion
+      await this.router.navigate(['/auth']);
+    }catch (error){
+      console.error('Error al cerrarla esion desde el componente')
+      this.mensajeerror = "Error al cerrar la sesion"
+      throw error;
+    }
+  }
+
+  
+
+  
+
+
+  private scrollHaciaAbajo():void{
+    try{
+        const container = this.messagesContainer?.nativeElement
+        if(container){
+          container.scrollTop = container.scrollHeight
+          
+        }
+    }catch(error){
+      console.error('✖️Error al hacer scroll', error)
+
+    }
+  }
   ngAfterViewChecked():void{
     if(this.debeHacerScroll){
-      this.scorllHaciaAbajo()
-        this.debeHacerScroll = false
+      this.scrollHaciaAbajo();
+      this.debeHacerScroll=false
     }
+
   }
- 
-      
-    
+
+
+
+
+   manejoErrorimagen(evento: any ): void {
+    evento.target.src =""
+
+  }
   
-  enviarMensaje(){}
-  manejoErrorImagen(){
 
-  }
-  cerrarSesion(){}
+  trackByMensaje( index:number, mensaje: MensajeChat){
+    return mensaje.id || `${mensaje.tipo} - ${mensaje.fechaEnvio}.getTime()}`
+}
 
-  trackByMensaje(index: number,mensaje: MensajeChat ){}
-
-  formatearMensajeAsistente(contenido: string){
+  formatearMensajeAsistente(contenido:string){
+    
     return contenido
     .replace(/\n/g, '<br>')
-    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
   }
 
-formatearHora(fecha: Date): string {
-  return fecha.toLocaleDateString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+
+  formatearHora(fecha: Date): string{
+    return fecha.toLocaleTimeString('es-ES', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+
+  }
+
+ async ngOnInit(): Promise <void>{
+
+  try {
+    await this.verificarAutenticacion();
+    await this.inicializarChat();
+    this.configurarSuscripciones();
+
+  } catch (error) {
+    console.error('Error al inicializar el chat OnInit')
+    this.mensajeerror= "Error al cargar el chat. Intente recargar la pagina"
+    throw error;
+  }
+ 
+
 }
 
-  ngOnInit(){
-    this.mensajes = this.generarMensajesDemo();
-  }
-
-
-  private generarMensajesDemo():MensajeChat[]{
-    const ahora = new Date();
-
-    return [
-      {
-        id:'id1',
-        contenido: 'Hola eres el asistente?',
-        tipo: 'usuario',
-        fechaEnvio: new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      },{
-        id:'id2',
-        contenido:'Hola soy tu asistente',
-        tipo: 'asistente',
-        fechaEnvio: new Date(ahora.getTime()),
-        estado:'error',
-        usuarioId:'u2'
-      },{
-        id:'id3',
-        contenido:'me puedes ayudar',
-        tipo:'usuario',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      },{
-        id:'id4',
-        contenido:'claro,dime que puedo hacer por ti el dia de hoy',
-        tipo:'asistente',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u2'
-      },{
-        id:'id5',
-        contenido:'me puedes ayudar con un problema de ortografia',
-        tipo:'usuario',
-        fechaEnvio:new Date (ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      },{
-        id:'id6',
-        contenido:"claro que si dime el texto que quieres corregir",
-        tipo: 'asistente',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u2'
-      },{
-        id:'id7',
-        contenido:'hola me llamo kevin y me gusta programar',
-        tipo:'usuario',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      },{
-        id:'id8',
-        contenido:'hola me llamo kevin y me gusta programar',
-        tipo:'usuario',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      },{
-        id:'id9',
-        contenido:'hola me llamo kevin y me gusta programar',
-        tipo:'usuario',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      },{
-        id:'id10',
-        contenido:'hola me llamo kevin y me gusta programar',
-        tipo:'usuario',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      },{
-        id:'id11',
-        contenido:'hola me llamo kevin y me gusta programar',
-        tipo:'usuario',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      },{
-        id:'id12',
-        contenido:'hola me llamo kevin y me gusta programar',
-        tipo:'usuario',
-        fechaEnvio:new Date(ahora.getTime()),
-        estado:'enviado',
-        usuarioId:'u1'
-      }
-    ]
-  }
+ngOnDestroy():void{
+  this.suscripciones.forEach(sub => sub.unsubscribe());
 }
 
 
+ private enfocarInput(): void{
+  setTimeout(() =>{
+    this.mensajeInput.nativeElement.focus();
+
+  }, 100);
+
+}
+}
