@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { MensajeChat } from '../../models/chat';
 import { AuthService } from './auth';
 import { FirebaseService } from './firebase';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { GeminiService } from './gemini';
 
 // vamos a generar un mock del servicio de gemini
 const geminiServiceMock = {
@@ -18,6 +19,8 @@ export class ChatService {
   private authService = inject(AuthService);
 
   private firebaseService = inject(FirebaseService);
+
+  private geminiService = inject(GeminiService)
 
   private mensajeSubject = new BehaviorSubject<MensajeChat[]>([]);
 
@@ -95,13 +98,12 @@ export class ChatService {
       this.asistenteRespondiendo.next(true);
       const mensajesActuales = this.mensajeSubject.value;
 
-      const historialParaGemini = geminiServiceMock.convertirHistorialGemini(
+      const historialParaGemini = this.geminiService.convertirHistorialGemini(
         mensajesActuales.slice(-6),
       );
-      const respuestaAsistente = await geminiServiceMock.enviarMensaje(
-        contenidoMensaje,
-        historialParaGemini,
-      );
+      const respuestaAsistente = await firstValueFrom(
+    
+      )
 
       // configurar los mensajes para el asistente
 
