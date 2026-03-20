@@ -101,9 +101,7 @@ export class ChatService {
       const historialParaGemini = this.geminiService.convertirHistorialGemini(
         mensajesActuales.slice(-6),
       );
-      const respuestaAsistente = await firstValueFrom(
-    
-      )
+      const respuestaAsistente = await firstValueFrom(this.geminiService.enviarMensaje(contenidoMensaje, historialParaGemini));
 
       // configurar los mensajes para el asistente
 

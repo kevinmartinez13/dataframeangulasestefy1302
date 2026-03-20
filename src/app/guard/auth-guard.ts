@@ -1,5 +1,33 @@
-import { CanActivateFn } from '@angular/router';
+import { CanActivate,CanActivateFn,Router } from '@angular/router';
+import { inject, Injectable } from '@angular/core';
+import { AuthService } from '../services/auth';
+import { from, Observable } from 'rxjs';
+import { map, tap} from 'rxjs/operators'
 
-export const authGuard: CanActivateFn = (route, state) => {
-  return true;
+@Injectable({
+  providedIn: 'root',
+})
+
+export class authGuard implements CanActivate {
+
+    private authService = inject (AuthService);
+    private router = inject (Router);
+
+    canActivate(): Observable <boolean> {
+     return this.authService.estaAutenticado$
+     .pipe(
+        tap(estaAutenticado =>{
+            if (!estaAutenticado){
+              console.log("error acceso denegado")
+              this.router.navigate(['/auth'])
+            }else{
+              console.log("Acceso permitido")
+            }
+        }
+
+        ),
+        map(estaAutenticado => estaAutenticado)
+
+     );
+    }
 };
