@@ -22,7 +22,6 @@ export class FirebaseService {
   private firestore = inject(Firestore);
   //funcion para guardar elmensaje.
 
-
   async guardarMensaje(mensaje: MensajeChat): Promise<void> {
     console.log(mensaje);
 
@@ -51,8 +50,7 @@ export class FirebaseService {
       };
       //añadir un documento a la coleccion, generar en coleccion
       const docRef = await addDoc(coleccionMensajes, mensajeGuardar);
-      console.log("men", mensajeGuardar);
-
+      console.log('men', mensajeGuardar);
     } catch (error: any) {
       console.error('✖️ error al guardar mensaje', error);
       console.error('error details', {
@@ -67,7 +65,7 @@ export class FirebaseService {
     {
       return new Observable((observer) => {
         const consulta = query(
-          collection(this.firestore, 'Mensajes'),
+          collection(this.firestore, 'mensajes'),
           where('usuarioId', '==', usuarioId),
         );
 
